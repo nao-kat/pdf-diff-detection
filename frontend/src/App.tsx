@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FileUpload } from './components/FileUpload';
 import { PdfViewer } from './components/PdfViewer';
 import { DiffList } from './components/DiffList';
-import type { CompareResponse, DiffItem } from './types/api';
+import type { CompareResponse, DiffItem, PageDiff } from './types/api';
 import './App.css';
 
 function App() {
@@ -35,6 +35,7 @@ function App() {
           'Content-Type': 'multipart/form-data',
         },
       });
+      console.log('Compare response:', response.data);
       setResult(response.data);
       setCurrentPage(1);
     } catch (err) {
@@ -57,6 +58,11 @@ function App() {
     if (!result) return [];
     const pageDiff = result.pages.find((p) => p.page_number === currentPage);
     return pageDiff?.diffs || [];
+  };
+
+  const getCurrentPageDiff = (): PageDiff | undefined => {
+    if (!result) return undefined;
+    return result.pages.find((p) => p.page_number === currentPage);
   };
 
   const maxPageCount = Math.max(oldPageCount, newPageCount, result?.old_page_count || 0, result?.new_page_count || 0);
@@ -90,6 +96,23 @@ function App() {
 
         {(result || oldFile || newFile) && (
           <section className="result-section">
+            {(oldFile || newFile) && !result && (
+              <div className="preview-info">
+                <p>📌 PDFプレビュー表示中</p>
+                <p className="preview-hint">両方のPDFをアップロードして「Compare」ボタンをクリックすると、差分が検出されます</p>
+              </div>
+            )}
+
+            {result && (
+              <div className="result-summary">
+                <p>✅ 差分検出完了</p>
+                <p className="summary-details">
+                  全{result.pages.length}ページ中 {result.pages.filter(p => p.diffs.length > 0).length}ページに差分を検出
+                  （合計 {result.pages.reduce((acc, p) => acc + p.diffs.length, 0)} 件）
+                </p>
+              </div>
+            )}
+            
             <div className="page-navigation">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -117,6 +140,7 @@ function App() {
                   diffs={getCurrentPageDiffs()}
                   viewType="old"
                   onPageCount={setOldPageCount}
+                  pageDiff={getCurrentPageDiff()}
                 />
               </div>
               <div className="viewer-panel">
@@ -127,6 +151,7 @@ function App() {
                   diffs={getCurrentPageDiffs()}
                   viewType="new"
                   onPageCount={setNewPageCount}
+                  pageDiff={getCurrentPageDiff()}
                 />
               </div>
             </div>

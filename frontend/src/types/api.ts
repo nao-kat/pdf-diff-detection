@@ -20,6 +20,8 @@ export interface DiffItem {
 export interface PageDiff {
   page_number: number;
   diffs: DiffItem[];
+  width: number;  // Page width in inches
+  height: number; // Page height in inches
 }
 
 export interface CompareResponse {

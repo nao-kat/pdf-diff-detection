@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.ai.documentintelligence.models import AnalyzeResult, DocumentPage
 from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 
 
 @dataclass
@@ -40,15 +41,26 @@ class DocumentIntelligenceService:
         endpoint = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
         key = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
 
-        if not endpoint or not key:
+        if not endpoint:
             raise ValueError(
-                "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT and AZURE_DOCUMENT_INTELLIGENCE_KEY "
-                "must be set in environment variables"
+                "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT must be set in environment variables"
             )
+
+        # Choose authentication method based on environment variables
+        if key:
+            # Option 1: Use API Key authentication
+            credential = AzureKeyCredential(key)
+        else:
+            # Option 2: Use Entra ID (DefaultAzureCredential)
+            # This will automatically use the best available credential:
+            # - Azure CLI (az login)
+            # - Managed Identity (in Azure)
+            # - Environment variables (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_CLIENT_SECRET)
+            credential = DefaultAzureCredential()
 
         self.client = DocumentIntelligenceClient(
             endpoint=endpoint,
-            credential=AzureKeyCredential(key),
+            credential=credential,
         )
 
     def extract_text_with_coordinates(
@@ -63,9 +75,10 @@ class DocumentIntelligenceService:
         Returns:
             A dictionary mapping page numbers to PageContent objects.
         """
+        # SDK 1.0.2+ uses 'body' parameter with bytes_source
         poller = self.client.begin_analyze_document(
-            "prebuilt-read",
-            analyze_request=pdf_content,
+            model_id="prebuilt-read",
+            body=pdf_content,
             content_type="application/pdf",
         )
         result: AnalyzeResult = poller.result()
