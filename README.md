@@ -11,8 +11,13 @@
 - ✅ Web UIでPDFを2つアップロード
 - ✅ Azure Document IntelligenceでスキャンPDFから文字を抽出
 - ✅ ページごとに差分（追加/削除/変更）を一覧表示
-- ✅ 差分箇所をPDFプレビュー上で赤枠表示
+- ✅ **差分箇所をPDFプレビュー上で色付き四角で表示**
+  - 🟢 緑色: 追加された内容
+  - 🔴 赤色: 削除された内容
+  - 🟠 オレンジ色: 変更された内容
 - ✅ 「変更」の場合、旧テキスト/新テキストを表示
+- ✅ PDFビューアーのズーム機能
+- ✅ ページナビゲーション機能
 
 ## アーキテクチャ
 
@@ -59,6 +64,41 @@
 
 1. [Azure Portal](https://portal.azure.com/) で Document Intelligence リソースを作成
 2. エンドポイントとAPIキーを取得
+
+#### 認証方法
+
+以下のいずれかの方法で認証を設定します：
+
+**方法1: APIキー認証（開発環境推奨）**
+
+1. Azure Portalから Document Intelligence リソースのAPIキーを取得
+2. `.env`ファイルに設定：
+   ```bash
+   AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://your-resource-name.cognitiveservices.azure.com
+   AZURE_DOCUMENT_INTELLIGENCE_KEY=your-api-key-here
+   ```
+
+**方法2: Entra ID認証（本番環境推奨）**
+
+`.env`の`AZURE_DOCUMENT_INTELLIGENCE_KEY`を空にし、以下のいずれかを使用：
+
+- **Azure CLI認証:**
+  ```bash
+  az login
+  ```
+  
+- **サービスプリンシパル認証:**
+  1. サービスプリンシパルを作成：
+     ```bash
+     az ad sp create-for-rbac --name pdf-diff-app --role "Cognitive Services User"
+     ```
+  2. 出力された情報を環境変数に設定：
+     ```bash
+     export AZURE_CLIENT_ID=<appId>
+     export AZURE_TENANT_ID=<tenant>
+     export AZURE_CLIENT_SECRET=<password>
+     ```
+     または`.env`ファイルに追記
 
 ### 2. バックエンドのセットアップ
 

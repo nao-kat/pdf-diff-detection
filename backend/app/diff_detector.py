@@ -54,8 +54,17 @@ class DiffDetector:
             new_page = new_pages.get(page_num)
 
             diffs = self._compare_pages(old_page, new_page)
-            if diffs:
-                page_diffs.append(PageDiff(page_number=page_num, diffs=diffs))
+            # Use the new page dimensions if available, otherwise old page
+            page = new_page or old_page
+            if diffs and page:
+                page_diffs.append(
+                    PageDiff(
+                        page_number=page_num,
+                        diffs=diffs,
+                        width=page.width,
+                        height=page.height,
+                    )
+                )
 
         return page_diffs
 

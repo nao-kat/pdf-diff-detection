@@ -29,6 +29,8 @@ class PageDiff(BaseModel):
 
     page_number: int
     diffs: List[DiffItem]
+    width: float  # Page width in inches
+    height: float  # Page height in inches
 
 
 class CompareResponse(BaseModel):
