@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # Azure App Service startup script for Python
-cd /home/site/wwwroot/backend
+# Handle both deployment scenarios: root or backend subfolder
+if [ -d "/home/site/wwwroot/backend" ]; then
+    cd /home/site/wwwroot/backend
+else
+    cd /home/site/wwwroot
+fi
 
 # Run gunicorn with uvicorn worker
 gunicorn app.main:app \

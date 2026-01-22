@@ -15,7 +15,7 @@ echo "Setting startup command..."
 az webapp config set \
   --resource-group "$RESOURCE_GROUP" \
   --name "$APP_NAME" \
-  --startup-file "cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600"
+  --startup-file "bash /home/site/wwwroot/backend/startup.sh"
 
 # 2. アプリケーション設定の追加
 echo "Setting application settings..."
