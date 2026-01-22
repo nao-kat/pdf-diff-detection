@@ -14,21 +14,16 @@ Azure Portalで以下の手順を実行してください:
 2. **スタートアップコマンド**に以下を入力:
 
 ```bash
-cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600
+gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600
 ```
 
-または、シェルスクリプトを使用する場合:
-
-```bash
-bash /home/site/wwwroot/backend/startup.sh
-```
+**注意**: GitHub Actionsはbackendフォルダのみをデプロイするため、`/home/site/wwwroot`が直接backendの内容になります。
 
 #### B. アプリケーション設定の追加
 **構成** → **アプリケーション設定** で以下の環境変数を追加:
 
 ```
-PYTHONPATH=/home/site/wwwroot/backend
-PROJECT_DIR=/home/site/wwwroot/backend
+SCM_DO_BUILD_DURING_DEPLOYMENT=true
 ```
 
 ### 2. Azure CLI でのデプロイ
@@ -70,17 +65,16 @@ git push azure main
 
 ### 4. GitHub Actions でのデプロイ
 
-`.github/workflows/main_your-app-name.yml` に以下を追加:
+GitHub Actionsは既に設定済みです（`.github/workflows/main_pdf-diff-naok.yml`）。
 
-```yaml
-- name: Deploy to Azure Web App
-  uses: azure/webapps-deploy@v2
-  with:
-    app-name: 'your-app-name'
-    slot-name: 'Production'
-    publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-    package: ./backend
-    startup-command: 'cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600'
+ワークフローは以下を実行します：
+1. `backend/`ディレクトリのみをアーティファクトとしてアップロード
+2. Azureにデプロイ（Oryxビルドが自動的に依存関係をインストール）
+
+**重要**: スタートアップコマンドは以下のように設定してください:
+
+```bash
+gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600
 ```
 
 ### 5. 必要な環境変数
