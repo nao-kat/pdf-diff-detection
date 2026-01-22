@@ -14,7 +14,7 @@ Azure Portalで以下の手順を実行してください:
 2. **スタートアップコマンド**に以下を入力:
 
 ```bash
-gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600
+cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600
 ```
 
 または、シェルスクリプトを使用する場合:
@@ -48,7 +48,7 @@ az webapp config appsettings set \
 az webapp config set \
   --resource-group $RESOURCE_GROUP \
   --name $APP_NAME \
-  --startup-file "gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600 --chdir /home/site/wwwroot/backend"
+  --startup-file "cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600"
 
 # backendディレクトリからデプロイ
 cd backend
@@ -80,7 +80,7 @@ git push azure main
     slot-name: 'Production'
     publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
     package: ./backend
-    startup-command: 'gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600'
+    startup-command: 'cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600'
 ```
 
 ### 5. 必要な環境変数

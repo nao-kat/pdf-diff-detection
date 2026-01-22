@@ -59,13 +59,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FF560DC6561842708F07BBFB01EB3E9A }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B875E653848041F7861C4980761DC2BF }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_07948942B4C94B668C8D27B5CBD6B4CC }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -73,4 +66,7 @@ jobs:
         with:
           app-name: 'pdf-diff-naok'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_PDF_DIFF_NAOK }}
+          package: ./backend
+          startup-command: 'cd /home/site/wwwroot/backend && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600'
           
