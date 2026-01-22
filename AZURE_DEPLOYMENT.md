@@ -1,7 +1,8 @@
 # Azure App Service デプロイ手順
 
-## エラーの原因
-`ModuleNotFoundError: No module named 'app'` エラーは、App Serviceが正しいディレクトリからアプリケーションを起動できていないことが原因です。
+## 概要
+このアプリケーションは、バックエンド（FastAPI）とフロントエンド（React）を統合してデプロイします。
+GitHub Actionsが自動的にフロントエンドをビルドし、バックエンドの静的ファイルとして含めます。
 
 ## 解決方法
 
@@ -17,7 +18,7 @@ Azure Portalで以下の手順を実行してください:
 gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 600
 ```
 
-**注意**: GitHub Actionsはbackendフォルダのみをデプロイするため、`/home/site/wwwroot`が直接backendの内容になります。
+**注意**: GitHub Actionsはbackendフォルダと統合されたフロントエンドをデプロイします。
 
 #### B. アプリケーション設定の追加
 **構成** → **アプリケーション設定** で以下の環境変数を追加:

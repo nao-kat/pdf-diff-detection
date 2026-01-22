@@ -1,12 +1,14 @@
 """FastAPI main application for PDF diff detection."""
 
 import os
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .diff_detector import DiffDetector
 from .document_intelligence import DocumentIntelligenceService
@@ -29,6 +31,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files if available
+static_paths = [
+    Path("/home/site/wwwroot/static"),  # Azure App Service
+    Path("../frontend/dist"),  # Local development
+    Path("./static"),  # Alternative location
+]
+
+for static_path in static_paths:
+    if static_path.exists() and static_path.is_dir():
+        app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+        break
 
 # Configuration
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
@@ -55,6 +69,32 @@ def validate_pdf_file(file: UploadFile, name: str) -> None:
             status_code=400,
             detail=f"{name} must be a PDF file (content-type: application/pdf)",
         )
+
+
+@app.get("/")
+async def root():
+    """Serve the frontend application."""
+    # Check for static files in various possible locations
+    static_paths = [
+        Path("/home/site/wwwroot/static"),  # Azure App Service
+        Path("../frontend/dist"),  # Local development
+        Path("./static"),  # Alternative location
+    ]
+    
+    for static_path in static_paths:
+        index_path = static_path / "index.html"
+        if index_path.exists():
+            return FileResponse(index_path)
+    
+    # If no static files found, return API info
+    return {
+        "app": "PDF Diff Detection API",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "compare": "/api/compare"
+        }
+    }
 
 
 @app.get("/health")
